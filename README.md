@@ -1,16 +1,37 @@
 # html5-escape
 
-Escape strings for HTML5
+Escape strings for HTML5 in a pleasing manner.
+
+While it is relative unchallenging to sufficiently escape strings, this library escapes minimally.
+E.g.
+
+```javascript
+const string = 'a && b';
+
+/* sufficiently */
+const Serializer = require('parse5/lib/serializer');
+Serializer.escapeString(string);
+// 'a &amp;&amp; b'
+
+/* minimally */
+const { Escaper } = require('html5-escape');
+new Escaper().escapeData(string);
+// 'a && b'
+```
+
+html5-escape can optionally encode control or non-ASCII characters. It preferentially uses named entities when available (e.g. `'&alpha;'`, `'&nbsp;'`).
 
 ## Usage
 
-    import { Escaper } from 'html5-escape';
+```javascript
+import { Escaper } from 'html5-escape';
 
-    const escaper = new Escaper();
-    // '&lt; Abbott & Costello &amp;me;'
-    escaper.escapeData('< Abbott & Costello &me; "on first"');
-    // '< Abbott & Costello &amp;me; &quot;on first&quote;'
-    escaper.escapeDoubleQuotedAttribute('< Abbott & Costello &me; "on first"');
+const escaper = new Escaper();
+escaper.escapeData('< Abbott & Costello &me; "on first"');
+// '&lt; Abbott & Costello &amp;me;'
+escaper.escapeDoubleQuotedAttribute('< Abbott & Costello &me; "on first"');
+// '< Abbott & Costello &amp;me; &quot;on first&quote;'
+```
 
 ## API
 

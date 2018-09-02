@@ -7,6 +7,7 @@ export type EscapeRange = 'control' | 'nonbreaking-space' | 'non-ascii';
 
 /**
  * Escape text for HTML5 documents.
+ *
  * The NUL character cannot be included in HTML documents. It is replaced with U+FFFD
  * 'REPLACEMENT CHARACTER'.
  */
