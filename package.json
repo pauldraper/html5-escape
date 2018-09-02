@@ -1,0 +1,16 @@
+{
+  "name": "html5-escape",
+  "devDependencies": {
+    "@types/node": "~10.9.0",
+    "request": "~2.88.0",
+    "request-promise-native": "~1.0.0",
+    "prettier": "^1.14.0",
+    "typescript": "^3.0.0"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "format": "prettier -l --write '**/*.{js,json,ts}'",
+    "generate-data": "node data-scripts/entities.js > data/entities.json"
+  }
+}
