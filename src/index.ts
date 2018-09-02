@@ -1,55 +1,27 @@
-const entities: EntitiesData = require('../data/entities');
-const map: MapData = require('../data/map');
-
-type EntitiesData = { entity: string; character: string }[];
-type MapData = { from: string; to: string }[];
-
-const entityLookup = new Map<string, string>();
-for (const { entity, character } of entities) {
-  entityLookup.set(character, entity);
-}
-
-const mapLookup = new Map<string, string>();
-for (const { from, to } of map) {
-  mapLookup.set(from, to);
-}
+import { lookup as entityLookup } from './entities';
+import { lookup as replacementLookup } from './replacements';
 
 export type EscapeBase = 10 | 16;
 
 export type EscapeRange = 'control' | 'nonbreaking-space' | 'non-ascii';
 
-export interface Options {
-  forceEscape: boolean;
-  escapeRanges: EscapeRange[];
-  escapeBase: EscapeBase;
-}
-
-export namespace Options {
-  export const defaults: Options = {
-    forceEscape: true,
-    escapeRanges: ['control', 'nonbreaking-space'],
-    escapeBase: 16,
-  };
-}
-
-// fast path
-function isSafe(value: string) {
-  return /^[\w ]*$/.test(value);
-}
-
-function replaceNull(value: string) {
-  return value.replace(/\0/g, '\ufffd');
-}
-
+/**
+ * Escape text for HTML5 documents.
+ * The NUL character cannot be included in HTML documents. It is replaced with U+FFFD
+ * 'REPLACEMENT CHARACTER'.
+ */
 export class Escaper {
   private readonly _options: Options;
 
+  /**
+   * @param {Options} [options={}]
+   */
   constructor(options: Partial<Options> = {}) {
     this._options = { ...Options.defaults, ...options };
   }
 
   private _escapeCharacter(character: string) {
-    const to = mapLookup.get(character);
+    const to = replacementLookup.get(character);
     if (to !== undefined) {
       if (this._options.forceEscape) {
         character = to;
@@ -85,14 +57,19 @@ export class Escaper {
       value = value.replace(/\xa0/g, string => this._escapeCharacter(string));
     }
     if (this._options.escapeRanges.includes('non-ascii')) {
-      value = value.replace(/[\x80-\u9999]/gu, string => this._escapeCharacter(string));
+      value = value.replace(/[\x80-\u{99999}]/gu, string => this._escapeCharacter(string));
     }
     return value;
   }
 
   /**
-   * @param value
-   * @see HTML 5.2, 8.2.4.1 https://www.w3.org/TR/html52/syntax.html#data-state
+   * Escape a text node
+   * @example
+   * escaper.escapeData('< Abbott & Costello &me; "on first"');
+   * // '&lt; Abbott & Costello &amp;me; "on first"'
+   * @param {string} value text to escape
+   * @returns {string} escaped text
+   * @see {@link https://www.w3.org/TR/html52/syntax.html#data-state HTML 5.2, 8.2.4.1}
    */
   escapeData(value: string) {
     if (!isSafe(value)) {
@@ -105,8 +82,13 @@ export class Escaper {
   }
 
   /**
-   * @param value
-   * @see HTML 5.2, 8.2.4.36 https://www.w3.org/TR/html52/syntax.html#attribute-value-double-quoted-state
+   * Escape an attribute value using double-quotes
+   * @example
+   * escaper.escapeData('< Abbott & Costello &me; "on first"');
+   * // '< Abbott & Costello &amp;me; &quot;on first&quot;'
+   * @param {string} value text to escape
+   * @returns {string} escaped text
+   * @see {@link https://www.w3.org/TR/html52/syntax.html#attribute-value-double-quoted-state HTML 5.2, 8.2.4.36}
    */
   escapeDoubleQuotedAttribute(value: string) {
     if (!isSafe(value)) {
@@ -119,8 +101,13 @@ export class Escaper {
   }
 
   /**
-   * @param value
-   * @see HTML 5.2, 8.2.4.37 https://www.w3.org/TR/html52/syntax.html#attribute-value-single-quoted-state
+   * Escape an attribute value using single-quotes
+   * @example
+   * escaper.escapeData('< Abbott & Costello &me; "on first"');
+   * // '< Abbott & Costello &amp;me; "on first"'
+   * @param {string} value text to escape
+   * @returns {string} escaped text
+   * @see {@link https://www.w3.org/TR/html52/syntax.html#attribute-value-single-quoted-state HTML 5.2, 8.2.4.37}
    */
   escapeSingleQuotedAttribute(value: string) {
     if (!isSafe(value)) {
@@ -133,8 +120,12 @@ export class Escaper {
   }
 
   /**
-   * @param value
-   * @see HTML 5.2, 8.2.4.38 https://www.w3.org/TR/html52/syntax.html#attribute-value-unquoted-state
+   * Escape an attribute value not using quotes
+   * escaper.escapeData('< Abbott & Costello &me; "on first"');
+   * // '&lt;&#x20Abbott&#x20&&#x20Costello&#x20&amp;me;&#x20&quot;on first&quot;'
+   * @param {string} value text to escape
+   * @returns {string} escaped text
+   * @see {@link https://www.w3.org/TR/html52/syntax.html#attribute-value-unquoted-state HTML 5.2, 8.2.4.38}
    */
   escapeUnquotedAttribute(value: string) {
     if (!isSafe(value)) {
@@ -145,4 +136,35 @@ export class Escaper {
     }
     return value;
   }
+}
+
+export interface Options {
+  escapeRanges: EscapeRange[];
+  escapeBase: EscapeBase;
+  forceEscape: boolean;
+}
+
+/**
+ * @property {string} [escapeRanges] - zero or more of 'control', 'nonbreaking-space', and 'non-ascii'. Defaults to
+ *   ['control', 'nonbreaking-space']
+ * @property {string} [escapeBase] - either 10 or 16. Defaults to 16.
+ * @property {boolean} [forceEscape] - whether to coerce characters to alternative forms if necessary to escape them.
+ *   Defaults to true.
+ * @typedef {Object} Options
+ */
+export namespace Options {
+  export const defaults: Options = {
+    escapeRanges: ['control', 'nonbreaking-space'],
+    escapeBase: 16,
+    forceEscape: true,
+  };
+}
+
+// fast path
+function isSafe(value: string) {
+  return /^[\w ]*$/.test(value);
+}
+
+function replaceNull(value: string) {
+  return value.replace(/\0/g, '\ufffd');
 }
