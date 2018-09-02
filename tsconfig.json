@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "downlevelIteration": true,
     "lib": ["es2016"],
     "module": "commonjs",
