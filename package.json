@@ -13,7 +13,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc -p .",
-    "doc": "documentation readme -s API --github --markdown-toc false lib/index.js",
+    "doc": "documentation readme -s API --markdown-toc false lib/index.js",
     "format": "prettier --write '**/*.{md,js,json,ts}'",
     "generate-data": "node data-scripts/entities.js > data/entities.json"
   },

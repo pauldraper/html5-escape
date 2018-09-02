@@ -122,6 +122,7 @@ export class Escaper {
 
   /**
    * Escape an attribute value not using quotes
+   * @example
    * escaper.escapeData('< Abbott & Costello &me; "on first"');
    * // '&lt;&#x20Abbott&#x20&&#x20Costello&#x20&amp;me;&#x20&quot;on first&quot;'
    * @param {string} value text to escape

@@ -40,6 +40,7 @@ escaper.escapeDoubleQuotedAttribute('< Abbott & Costello &me; "on first"');
 ### Escaper
 
 Escape text for HTML5 documents.
+
 The NUL character cannot be included in HTML documents. It is replaced with U+FFFD
 'REPLACEMENT CHARACTER'.
 
@@ -109,12 +110,17 @@ Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/G
 - **See: [HTML 5.2, 8.2.4.38](https://www.w3.org/TR/html52/syntax.html#attribute-value-unquoted-state)**
 
 Escape an attribute value not using quotes
-escaper.escapeData('&lt; Abbott & Costello &me; "on first"');
-// '&lt;𠪻ott <Ȍostello &me; "on first"'
 
 ##### Parameters
 
 - `value` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** text to escape
+
+##### Examples
+
+```javascript
+escaper.escapeData('< Abbott & Costello &me; "on first"');
+// '&lt;&#x20Abbott&#x20&&#x20Costello&#x20&amp;me;&#x20&quot;on first&quot;'
+```
 
 Returns **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** escaped text
 
